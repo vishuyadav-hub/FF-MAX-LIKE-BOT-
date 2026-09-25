@@ -418,4 +418,25 @@ def main():
     app.run_polling()
 
 if __name__ == "__main__":
+    # ================= 🚀 MAIN FUNCTION =================
+def main():
+    print("⏳ Starting Telegram Bot...")
+    
+    # Simple & stable Application builder
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start_cmd))
+    app.add_handler(CommandHandler("menu", start_cmd))
+    
+    app.add_handler(CallbackQueryHandler(plan_callback_handler))
+    app.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+    app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback))
+    
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_input))
+
+    print("🤖 Bot is successfully running and listening!")
+    app.run_polling(drop_pending_updates=True)
+
+if __name__ == "__main__":
     main()
+    
