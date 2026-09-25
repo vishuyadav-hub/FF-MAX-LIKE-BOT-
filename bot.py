@@ -62,7 +62,6 @@ BOT_TOKEN = "8986200151:AAGEDkYDJNqxN88-EWbSwMxAV1bT2WPysU4"
 OWNER_USERNAME = "@loardvishu"
 DATA_FILE = "autolike_data.json"
 
-# File ID ki jagah Direct QR Photo Link ya valid File ID
 QR_FILE_ID = "AgACAgUAAxkBAAEvHcJqtV3Sk6iT7xINNLJCR5UpebinkAACtxJrG3-dsFWi7geOJ6Wd0gEAAwIAA3kAAz0E"
 
 REGIONS_LIST = [
@@ -147,7 +146,6 @@ async def send_qr_photo(chat_id, caption, context, reply_markup):
         )
     except Exception as e:
         logger.error(f"Error sending photo via File ID: {e}")
-        # Agar photo send na ho paaye, toh message text ke saath zarur aayega
         await context.bot.send_message(
             chat_id=chat_id,
             text=f"⚠️ **Payment Details:**\n\n{caption}",
@@ -244,6 +242,24 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    current_step = context.user_data.get("step")
+
+    # Flow for BALANCE & PLANS UID input
+    if current_step == "BALANCE_AWAITING_UID":
+        if text.isdigit() and len(text) >= 5:
+            context.user_data["selected_uid"] = text
+            context.user_data["step"] = None
+
+            await update.message.reply_text(
+                f"✅ **Saved UID:** `{text}`\n\n👇 **Niche se apna Plan select karein:**",
+                reply_markup=get_inr_plans_keyboard(),
+                parse_mode="Markdown"
+            )
+        else:
+            await update.message.reply_text("❌ Please enter a valid numerical Free Fire UID.")
+        return
+
+    # Flow for AutoLike Duration selection
     if any(d in text for d in ["1 Days", "7 Days", "15 Days", "30 Days", "45 Days", "60 Days", "90 Days", "120 Days"]):
         plan_matrix = {
             "1 Days": {"name": "1 Day Autolikes", "price": 8, "days": 1},
@@ -263,8 +279,6 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["step"] = "AUTOLIKE_SELECT_REGION"
         await update.message.reply_text("💎 **Select Your Region:**", reply_markup=get_region_keyboard(), parse_mode="Markdown")
         return
-
-    current_step = context.user_data.get("step")
 
     if current_step == "CHECK_MY_AUTOLIKE_UID":
         if text.isdigit() and len(text) >= 5:
@@ -321,20 +335,6 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await send_qr_photo(update.effective_chat.id, caption_msg, context, get_main_menu_keyboard())
         else:
             await update.message.reply_text("❌ Galat UID! Sahi Numeric Free Fire UID enter karein.")
-        return
-
-    if current_step == "BALANCE_AWAITING_UID":
-        if text.isdigit() and len(text) >= 5:
-            context.user_data["selected_uid"] = text
-            context.user_data["step"] = None
-
-            await update.message.reply_text(
-                f"✅ **Saved UID:** `{text}`\n\n👇 **Niche se apna Plan select karein:**",
-                reply_markup=get_inr_plans_keyboard(),
-                parse_mode="Markdown"
-            )
-        else:
-            await update.message.reply_text("❌ Please enter a valid numerical Free Fire UID.")
         return
 
     if current_step == "AUTOLIKE_SELECT_REGION":
@@ -394,4 +394,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
