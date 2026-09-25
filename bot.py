@@ -1,8 +1,8 @@
-# ===================================
+# ================= =================
 # MADE BY FF MAX LIKE BOT OB55
 # PROJECTS KABIR
 # MY USER : @loardvishu
-# ===================================
+# ================= =================
 import json
 import asyncio
 import os
@@ -16,6 +16,7 @@ from telegram import (
     KeyboardButton,
     InlineKeyboardMarkup,
     InlineKeyboardButton,
+    ReplyKeyboardRemove
 )
 from telegram.ext import (
     ApplicationBuilder,
@@ -27,7 +28,7 @@ from telegram.ext import (
 )
 from telegram.request import HTTPXRequest
 
-# ================= 🌐 LIGHTWEIGHT KEEP-ALIVE SERVER =================
+# ================= 🌐 KEEP-ALIVE SERVER =================
 class HealthCheckHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -36,7 +37,7 @@ class HealthCheckHandler(SimpleHTTPRequestHandler):
         self.wfile.write(b'Bot is Alive!')
 
     def log_message(self, format, *args):
-        return  # Clean logs
+        return
 
 def run_keep_alive_server():
     try:
@@ -46,7 +47,6 @@ def run_keep_alive_server():
     except Exception as e:
         logger.error(f"Keep-alive server error: {e}")
 
-# Server ko background thread mein safely start karein
 Thread(target=run_keep_alive_server, daemon=True).start()
 
 # ================= 📝 LOGGING SETUP =================
@@ -69,7 +69,6 @@ REGIONS_LIST = [
     "US", "VN", "TH", "ME", "PK", "CIS", "BD"
 ]
 
-# Updated Plans
 INR_PLANS = {
     "plan_1": {"name": "1 Day (200+ Likes/Day)", "price": 8, "likes": "200+", "days": 1},
     "plan_7": {"name": "7 Days (200+ Likes/Day)", "price": 45, "likes": "200+", "days": 7},
@@ -135,7 +134,7 @@ def load_data():
     data.setdefault("uids", [])
     return data
 
-async def send_qr_photo(chat_id, caption, context, reply_markup):
+async def send_qr_photo(chat_id, caption, context, reply_markup=None):
     try:
         await context.bot.send_photo(
             chat_id=chat_id,
@@ -164,7 +163,7 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def plan_callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
-    await query.answer()
+    await query.answer()  # Fast ACK response to Telegram
 
     plan_key = query.data
     if plan_key in INR_PLANS:
@@ -260,7 +259,7 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # Flow for AutoLike Duration selection
-    if any(d in text for d in ["1 Days", "7 Days", "15 Days", "30 Days", "45 Days", "60 Days", "90 Days", "120 Days"]):
+    if any(d in text for d in ["1 Days", "7 Days", "15 Days", "30 Days", "45 Days", "60 Days", "90 Days", "120 Days"]) and current_step != "BALANCE_AWAITING_UID":
         plan_matrix = {
             "1 Days": {"name": "1 Day Autolikes", "price": 8, "days": 1},
             "7 Days": {"name": "7 Days Autolikes", "price": 45, "days": 7},
@@ -373,7 +372,6 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def main():
     print("⏳ Starting Telegram Bot...")
     
-    # Request timeouts
     request_kwargs = HTTPXRequest(
         connect_timeout=30.0,
         read_timeout=30.0,
@@ -386,6 +384,7 @@ def main():
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CommandHandler("menu", start_cmd))
     
+    # Callback query handler registered FIRST for inline buttons
     app.add_handler(CallbackQueryHandler(plan_callback_handler))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_input))
 
@@ -394,3 +393,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
