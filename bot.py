@@ -197,7 +197,6 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if "BALANCE" in clean_text or "PLANS" in clean_text or "BALANCE / PLANS" in text:
-        context.user_data.clear()
         context.user_data["step"] = "BALANCE_AWAITING_UID"
         await update.message.reply_text(
             "💳 **BALANCE & PLANS**\n\n"
@@ -393,3 +392,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
