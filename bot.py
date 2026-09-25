@@ -16,14 +16,12 @@ from telegram import (
     KeyboardButton,
     InlineKeyboardMarkup,
     InlineKeyboardButton,
-    LabeledPrice
 )
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
     MessageHandler,
     CallbackQueryHandler,
-    PreCheckoutQueryHandler,
     ContextTypes,
     filters,
 )
@@ -71,22 +69,16 @@ REGIONS_LIST = [
     "US", "VN", "TH", "ME", "PK", "CIS", "BD"
 ]
 
+# Updated Plans
 INR_PLANS = {
-    "plan_1": {"name": "1 Day (25 Likes)", "price": 1, "likes": "25", "days": 1},
-    "plan_2": {"name": "1 Day (50 Likes)", "price": 2, "likes": "50", "days": 1},
-    "plan_3": {"name": "1 Day (75 Likes)", "price": 3, "likes": "75", "days": 1},
-    "plan_4": {"name": "1 Day (100 Likes)", "price": 4, "likes": "100", "days": 1},
-    "plan_5": {"name": "1 Day (125 Likes)", "price": 5, "likes": "125", "days": 1},
-    "plan_6": {"name": "1 Day (150 Likes)", "price": 6, "likes": "150", "days": 1},
-    "plan_7": {"name": "1 Day (180 Likes)", "price": 7, "likes": "180", "days": 1},
-    "plan_8": {"name": "1 Day (200-220 Likes)", "price": 8, "likes": "200-220", "days": 1},
-    "plan_bulk_7": {"name": "7 Days (200+ Likes/Day)", "price": 45, "likes": "200+", "days": 7},
-    "plan_bulk_15": {"name": "15 Days (200+ Likes/Day)", "price": 80, "likes": "200+", "days": 15},
-    "plan_bulk_30": {"name": "30 Days (200+ Likes/Day)", "price": 140, "likes": "200+", "days": 30},
-    "plan_bulk_45": {"name": "45 Days (200+ Likes/Day)", "price": 200, "likes": "200+", "days": 45},
-    "plan_bulk_60": {"name": "60 Days (200+ Likes/Day)", "price": 250, "likes": "200+", "days": 60},
-    "plan_bulk_90": {"name": "90 Days (200+ Likes/Day)", "price": 380, "likes": "200+", "days": 90},
-    "plan_bulk_120": {"name": "120 Days (200+ Likes/Day)", "price": 500, "likes": "200+", "days": 120},
+    "plan_1": {"name": "1 Day (200+ Likes/Day)", "price": 8, "likes": "200+", "days": 1},
+    "plan_7": {"name": "7 Days (200+ Likes/Day)", "price": 45, "likes": "200+", "days": 7},
+    "plan_15": {"name": "15 Days (200+ Likes/Day)", "price": 80, "likes": "200+", "days": 15},
+    "plan_30": {"name": "30 Days (200+ Likes/Day)", "price": 140, "likes": "200+", "days": 30},
+    "plan_45": {"name": "45 Days (200+ Likes/Day)", "price": 200, "likes": "200+", "days": 45},
+    "plan_60": {"name": "60 Days (200+ Likes/Day)", "price": 250, "likes": "200+", "days": 60},
+    "plan_90": {"name": "90 Days (200+ Likes/Day)", "price": 380, "likes": "200+", "days": 90},
+    "plan_120": {"name": "120 Days (200+ Likes/Day)", "price": 500, "likes": "200+", "days": 120},
 }
 
 # ================= ⌨️ KEYBOARD MENUS =================
@@ -94,13 +86,6 @@ def get_main_menu_keyboard():
     keyboard = [
         [KeyboardButton("❤️ GET LIKES"), KeyboardButton("🔥 AUTOLIKE")],
         [KeyboardButton("💳 BALANCE / PLANS"), KeyboardButton("👤 OWNER")]
-    ]
-    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-
-def get_payment_method_keyboard():
-    keyboard = [
-        [KeyboardButton("💳 UPI"), KeyboardButton("⭐ TG STARS")],
-        [KeyboardButton("🔙 Main Menu")]
     ]
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
@@ -134,21 +119,10 @@ def get_region_keyboard():
 
 def get_inr_plans_keyboard():
     buttons = [
-        [InlineKeyboardButton("1 Day - 25 Likes (₹1)", callback_data="plan_1")],
-        [InlineKeyboardButton("1 Day - 50 Likes (₹2)", callback_data="plan_2")],
-        [InlineKeyboardButton("1 Day - 75 Likes (₹3)", callback_data="plan_3")],
-        [InlineKeyboardButton("1 Day - 100 Likes (₹4)", callback_data="plan_4")],
-        [InlineKeyboardButton("1 Day - 125 Likes (₹5)", callback_data="plan_5")],
-        [InlineKeyboardButton("1 Day - 150 Likes (₹6)", callback_data="plan_6")],
-        [InlineKeyboardButton("1 Day - 180 Likes (₹7)", callback_data="plan_7")],
-        [InlineKeyboardButton("1 Day - 200-220 Likes (₹8)", callback_data="plan_8")],
-        [InlineKeyboardButton("7 Days - 200+ Likes/Day (₹45)", callback_data="plan_bulk_7")],
-        [InlineKeyboardButton("15 Days - 200+ Likes/Day (₹80)", callback_data="plan_bulk_15")],
-        [InlineKeyboardButton("30 Days - 200+ Likes/Day (₹140)", callback_data="plan_bulk_30")],
-        [InlineKeyboardButton("45 Days - 200+ Likes/Day (₹200)", callback_data="plan_bulk_45")],
-        [InlineKeyboardButton("60 Days - 200+ Likes/Day (₹250)", callback_data="plan_bulk_60")],
-        [InlineKeyboardButton("90 Days - 200+ Likes/Day (₹380)", callback_data="plan_bulk_90")],
-        [InlineKeyboardButton("120 Days - 200+ Likes/Day (₹500)", callback_data="plan_bulk_120")],
+        [InlineKeyboardButton("1 Days (₹8)", callback_data="plan_1"), InlineKeyboardButton("7 Days (₹45)", callback_data="plan_7")],
+        [InlineKeyboardButton("15 Days (₹80)", callback_data="plan_15"), InlineKeyboardButton("30 Days (₹140)", callback_data="plan_30")],
+        [InlineKeyboardButton("45 Days (₹200)", callback_data="plan_45"), InlineKeyboardButton("60 Days (₹250)", callback_data="plan_60")],
+        [InlineKeyboardButton("90 Days (₹380)", callback_data="plan_90"), InlineKeyboardButton("120 Days (₹500)", callback_data="plan_120")],
     ]
     return InlineKeyboardMarkup(buttons)
 
@@ -238,7 +212,7 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["step"] = "GET_LIKES_SELECT_REGION"
         msg = (
             "💎 **GET LIKES!**\n\n"
-            "🥷 Get An Instant Like Boost With Just 8 ⭐ Per Request!\n\n"
+            "🥷 Get An Instant Like Boost With Just ₹8 INR Per Request!\n\n"
             "🌐 Choose Your Region From The Keyboard Below To Continue:"
         )
         await update.message.reply_text(msg, reply_markup=get_region_keyboard(), parse_mode="Markdown")
@@ -246,8 +220,8 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if ("AUTOLIKE" in clean_text or "AUTOLIKE" in text) and "CREATE" not in clean_text and "MY" not in clean_text:
         context.user_data.clear()
-        msg = "🪙 **AUTOLIKES PRICING & MODES!**\n\n💳 Choose your payment method to continue:"
-        await update.message.reply_text(msg, reply_markup=get_payment_method_keyboard(), parse_mode="Markdown")
+        msg = "🔥 **AUTOLIKE SYSTEM**\n\nChoose an option from below:"
+        await update.message.reply_text(msg, reply_markup=get_autolike_system_keyboard(), parse_mode="Markdown")
         return
 
     if "OWNER" in clean_text or "OWNER" in text:
@@ -255,30 +229,18 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"👤 **Bot Owner:** {OWNER_USERNAME}\n👑 **Group:** {CHANNEL_1}", parse_mode="Markdown")
         return
 
-    if text == "💳 UPI":
-        context.user_data["payment_method"] = "UPI"
-        await update.message.reply_text("✅ **UPI Selected.** Choose Option:", reply_markup=get_autolike_system_keyboard())
-        return
-
-    if text == "⭐ TG STARS":
-        context.user_data["payment_method"] = "STARS"
-        await update.message.reply_text("⭐ **Telegram Stars Selected.** Choose Option:", reply_markup=get_autolike_system_keyboard())
-        return
-
     if text == "🛒 Create New AutoLike":
         await update.message.reply_text("📅 **Select Duration:**", reply_markup=get_duration_keyboard(), parse_mode="Markdown")
         return
 
     if text == "📋 My AutoLikes":
-        data = load_data()
-        user_uids = [x for x in data["uids"] if x.get("tg_id") == update.effective_user.id]
-        if not user_uids:
-            await update.message.reply_text("❌ Aapka koi active AutoLike plan nahi hai.")
-        else:
-            resp = "📋 **Your Active AutoLikes Orders:**\n\n"
-            for u in user_uids:
-                resp += f"🆔 UID: `{u['uid']}` | Region: {u['region'].upper()} | Validity: {u.get('days')} Days\n"
-            await update.message.reply_text(resp, parse_mode="Markdown")
+        context.user_data["step"] = "CHECK_MY_AUTOLIKE_UID"
+        await update.message.reply_text(
+            "📋 **MY AUTOLIKES SEARCH**\n\n"
+            "🔍 Apna AutoLike status check karne ke liye apna **Free Fire UID** enter karein:",
+            reply_markup=ReplyKeyboardMarkup([[KeyboardButton("🔙 Main Menu")]], resize_keyboard=True),
+            parse_mode="Markdown"
+        )
         return
 
     if any(d in text for d in ["1 Days", "7 Days", "15 Days", "30 Days", "45 Days", "60 Days", "90 Days", "120 Days"]):
@@ -303,6 +265,30 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     current_step = context.user_data.get("step")
 
+    if current_step == "CHECK_MY_AUTOLIKE_UID":
+        if text.isdigit() and len(text) >= 5:
+            search_uid = text.strip()
+            data = load_data()
+            matched_orders = [x for x in data.get("uids", []) if str(x.get("uid")).strip() == search_uid]
+            
+            context.user_data.clear()
+            if not matched_orders:
+                await update.message.reply_text(
+                    f"❌ **UID `{search_uid}` ke liye koi active AutoLike plan nahi mila.**", 
+                    reply_markup=get_main_menu_keyboard(), 
+                    parse_mode="Markdown"
+                )
+            else:
+                resp = f"📋 **Active AutoLikes Status for UID `{search_uid}`:**\n\n"
+                for u in matched_orders:
+                    region = str(u.get("region", "N/A")).upper()
+                    days = u.get("days", "N/A")
+                    resp += f"🆔 UID: `{u['uid']}` | Region: {region} | Validity: {days} Days\n"
+                await update.message.reply_text(resp, reply_markup=get_main_menu_keyboard(), parse_mode="Markdown")
+        else:
+            await update.message.reply_text("❌ Galat UID! Sahi Numeric Free Fire UID enter karein.")
+        return
+
     if current_step == "GET_LIKES_SELECT_REGION":
         if text.upper() in REGIONS_LIST:
             context.user_data["get_likes_region"] = text.lower()
@@ -318,16 +304,20 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             region = context.user_data.get("get_likes_region", "ind")
             context.user_data.clear()
 
-            keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⭐ Pay 8 Stars", pay=True)]])
-            await update.message.reply_invoice(
-                title="⚡ Instant Likes Boost",
-                description=f"Instant like boost for UID {uid} (Region: {region.upper()}).",
-                payload=f"likes_{uid}_{region}",
-                provider_token="",
-                currency="XTR",
-                prices=[LabeledPrice("8 Stars", 8)],
-                reply_markup=keyboard
+            caption_msg = (
+                f"🛍️ **Product:** Instant Likes Boost\n"
+                f"❤️ **Likes Rate:** Instant Boost\n"
+                f"🌐 **Region:** {region.upper()}\n"
+                f"🆔 **UID:** `{uid}`\n"
+                f"💰 **Amount:** ₹8 INR\n"
+                f"💳 **Method:** UPI / Scanner\n\n"
+                f"👉 **Steps to Activate:**\n"
+                f"1. Niche diye gaye Scanner par ₹8 Pay karein.\n"
+                f"2. Screenshot Admin ko bhej dein: {OWNER_USERNAME}\n"
+                f"3. Verification ke baad likes Instant send ho jayenge!"
             )
+
+            await send_qr_photo(update.effective_chat.id, caption_msg, context, get_main_menu_keyboard())
         else:
             await update.message.reply_text("❌ Galat UID! Sahi Numeric Free Fire UID enter karein.")
         return
@@ -360,42 +350,23 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             uid = text
             region = context.user_data.get("selected_region", "IND")
             plan = context.user_data.get("selected_plan", {"name": "1 Day Autolikes", "price": 8, "days": 1})
-            payment_method = context.user_data.get("payment_method", "UPI")
             
             context.user_data.clear()
 
-            if payment_method == "STARS":
-                keyboard = InlineKeyboardMarkup([[InlineKeyboardButton("⭐ Pay Stars", pay=True)]])
-                await update.message.reply_invoice(
-                    title=f"🔥 {plan['days']} Days AutoLike",
-                    description=f"AutoLikes for UID {uid} ({region}).",
-                    payload=f"autolike_{uid}_{region}_{plan['days']}",
-                    provider_token="",
-                    currency="XTR",
-                    prices=[LabeledPrice(f"{plan['days']} Days Plan", plan['price'])],
-                    reply_markup=keyboard
-                )
-            else:
-                caption_msg = (
-                    f"🛍️ **Product:** {plan['days']} Day Autolikes\n"
-                    f"❤️ **Likes Rate:** 200+ Daily Likes\n"
-                    f"🌐 **Region:** {region}\n"
-                    f"🆔 **UID:** `{uid}`\n"
-                    f"💰 **Amount:** ₹{plan['price']} INR\n"
-                    f"💳 **Method:** UPI / Scanner\n\n"
-                    f"📷 **Send payment screenshot to Admin:** {OWNER_USERNAME}"
-                )
+            caption_msg = (
+                f"🛍️ **Product:** {plan['days']} Day Autolikes\n"
+                f"❤️ **Likes Rate:** 200+ Daily Likes\n"
+                f"🌐 **Region:** {region}\n"
+                f"🆔 **UID:** `{uid}`\n"
+                f"💰 **Amount:** ₹{plan['price']} INR\n"
+                f"💳 **Method:** UPI / Scanner\n\n"
+                f"📷 **Send payment screenshot to Admin:** {OWNER_USERNAME}"
+            )
 
-                await send_qr_photo(update.effective_chat.id, caption_msg, context, get_main_menu_keyboard())
+            await send_qr_photo(update.effective_chat.id, caption_msg, context, get_main_menu_keyboard())
         else:
             await update.message.reply_text("❌ Please enter valid numerical UID.")
         return
-
-async def precheckout_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.pre_checkout_query.answer(ok=True)
-
-async def successful_payment_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("✅ Payment Successful! Likes process starts now.")
 
 # ================= 🚀 MAIN FUNCTION =================
 def main():
@@ -415,9 +386,6 @@ def main():
     app.add_handler(CommandHandler("menu", start_cmd))
     
     app.add_handler(CallbackQueryHandler(plan_callback_handler))
-    app.add_handler(PreCheckoutQueryHandler(precheckout_callback))
-    app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback))
-    
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_input))
 
     print("🤖 Bot is successfully running and listening!")
