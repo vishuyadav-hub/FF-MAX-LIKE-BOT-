@@ -62,6 +62,7 @@ BOT_TOKEN = "8986200151:AAGEDkYDJNqxN88-EWbSwMxAV1bT2WPysU4"
 OWNER_USERNAME = "@loardvishu"
 DATA_FILE = "autolike_data.json"
 
+# File ID ki jagah Direct QR Photo Link ya valid File ID
 QR_FILE_ID = "AgACAgUAAxkBAAEvHcJqtV3Sk6iT7xINNLJCR5UpebinkAACtxJrG3-dsFWi7geOJ6Wd0gEAAwIAA3kAAz0E"
 
 REGIONS_LIST = [
@@ -146,6 +147,7 @@ async def send_qr_photo(chat_id, caption, context, reply_markup):
         )
     except Exception as e:
         logger.error(f"Error sending photo via File ID: {e}")
+        # Agar photo send na ho paaye, toh message text ke saath zarur aayega
         await context.bot.send_message(
             chat_id=chat_id,
             text=f"⚠️ **Payment Details:**\n\n{caption}",
