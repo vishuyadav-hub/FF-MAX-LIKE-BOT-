@@ -1,8 +1,8 @@
-#━━━━━━━━━━━━━━━━━━━
+# ===================================
 # MADE BY FF MAX LIKE BOT OB55
 # PROJECTS KABIR
 # MY USER : @loardvishu
-#━━━━━━━━━━━━━━━━━━━
+# ===================================
 import json
 import asyncio
 import os
@@ -38,14 +38,17 @@ class HealthCheckHandler(SimpleHTTPRequestHandler):
         self.wfile.write(b'Bot is Alive!')
 
     def log_message(self, format, *args):
-        return  # Logs ko clean rakhne ke liye ping logs suppress kiye hain
+        return  # Clean logs
 
 def run_keep_alive_server():
-    port = int(os.environ.get('PORT', 10000))
-    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
-    server.serve_forever()
+    try:
+        port = int(os.environ.get('PORT', 10000))
+        server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
+        server.serve_forever()
+    except Exception as e:
+        logger.error(f"Keep-alive server error: {e}")
 
-# Server ko non-blocking background daemon thread me start karein
+# Server ko background thread mein safely start karein
 Thread(target=run_keep_alive_server, daemon=True).start()
 
 # ================= 📝 LOGGING SETUP =================
@@ -397,33 +400,16 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
 # ================= 🚀 MAIN FUNCTION =================
 def main():
     print("⏳ Starting Telegram Bot...")
+    
+    # Request timeouts
     request_kwargs = HTTPXRequest(
         connect_timeout=30.0,
         read_timeout=30.0,
         write_timeout=30.0,
         pool_timeout=30.0
     )
+    
     app = ApplicationBuilder().token(BOT_TOKEN).request(request_kwargs).build()
-
-    app.add_handler(CommandHandler("start", start_cmd))
-    app.add_handler(CommandHandler("menu", start_cmd))
-    
-    app.add_handler(CallbackQueryHandler(plan_callback_handler))
-    app.add_handler(PreCheckoutQueryHandler(precheckout_callback))
-    app.add_handler(MessageHandler(filters.SUCCESSFUL_PAYMENT, successful_payment_callback))
-    
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_input))
-
-    print("🤖 Bot is successfully running and listening!")
-    app.run_polling()
-
-if __name__ == "__main__":
-    # ================= 🚀 MAIN FUNCTION =================
-def main():
-    print("⏳ Starting Telegram Bot...")
-    
-    # Simple & stable Application builder
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CommandHandler("menu", start_cmd))
@@ -439,4 +425,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
