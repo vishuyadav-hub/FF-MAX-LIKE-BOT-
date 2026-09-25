@@ -1,27 +1,3 @@
-import os
-from threading import Thread
-from flask import Flask
-
-app = Flask('')
-
-
-@app.route('/')
-def home():
-  return 'Bot is Alive!'
-
-
-def run():
-  port = int(os.environ.get('PORT', 10000))
-  app.run(host='0.0.0.0', port=port)
-
-
-def keep_alive():
-  t = Thread(target=run)
-  t.start()
-
-
-# Bot start hone se pehle isko call karein
-keep_alive()
 #━━━━━━━━━━━━━━━━━━━
 # MADE BY FF MAX LIKE BOT OB55
 # PROJECTS KABIR
@@ -31,6 +7,9 @@ import json
 import asyncio
 import os
 import logging
+from http.server import HTTPServer, SimpleHTTPRequestHandler
+from threading import Thread
+
 from telegram import (
     Update, 
     ReplyKeyboardMarkup, 
@@ -50,6 +29,26 @@ from telegram.ext import (
 )
 from telegram.request import HTTPXRequest
 
+# ================= 🌐 LIGHTWEIGHT KEEP-ALIVE SERVER =================
+class HealthCheckHandler(SimpleHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b'Bot is Alive!')
+
+    def log_message(self, format, *args):
+        return  # Logs ko clean rakhne ke liye ping logs suppress kiye hain
+
+def run_keep_alive_server():
+    port = int(os.environ.get('PORT', 10000))
+    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
+    server.serve_forever()
+
+# Server ko non-blocking background daemon thread me start karein
+Thread(target=run_keep_alive_server, daemon=True).start()
+
+# ================= 📝 LOGGING SETUP =================
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO
@@ -57,13 +56,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # ================= 👑 CONFIG =================
-
 CHANNEL_1 = "@FFMAXLIKEGROUP"
 BOT_TOKEN = "8986200151:AAGEDkYDJNqxN88-EWbSwMxAV1bT2WPysU4"
 OWNER_USERNAME = "@loardvishu"
 DATA_FILE = "autolike_data.json"
 
-# 🎯 SCANNER IMAGE FILE ID (High Quality Resolution)
 QR_FILE_ID = "AgACAgUAAxkBAAEvHcJqtV3Sk6iT7xINNLJCR5UpebinkAACtxJrG3-dsFWi7geOJ6Wd0gEAAwIAA3kAAz0E"
 
 REGIONS_LIST = [
@@ -90,7 +87,6 @@ INR_PLANS = {
 }
 
 # ================= ⌨️ KEYBOARD MENUS =================
-
 def get_main_menu_keyboard():
     keyboard = [
         [KeyboardButton("❤️ GET LIKES"), KeyboardButton("🔥 AUTOLIKE")],
@@ -163,7 +159,6 @@ def load_data():
     return data
 
 async def send_qr_photo(chat_id, caption, context, reply_markup):
-    """ Direct Telegram File ID se Instant QR Scanner Bhejne Ke Liye """
     try:
         await context.bot.send_photo(
             chat_id=chat_id,
@@ -182,7 +177,6 @@ async def send_qr_photo(chat_id, caption, context, reply_markup):
         )
 
 # ================= 📩 HANDLERS =================
-
 async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.user_data.clear()
     await update.message.reply_text(
@@ -401,7 +395,6 @@ async def successful_payment_callback(update: Update, context: ContextTypes.DEFA
     await update.message.reply_text("✅ Payment Successful! Likes process starts now.")
 
 # ================= 🚀 MAIN FUNCTION =================
-
 def main():
     print("⏳ Starting Telegram Bot...")
     request_kwargs = HTTPXRequest(
